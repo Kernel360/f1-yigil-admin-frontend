@@ -167,7 +167,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://yigil.co.kr/api/v1/admins/signup/accept",
+        "http://3.34.236.45/api/v1/admins/signup/accept",
         {
           method: "POST",
           headers: {
@@ -206,7 +206,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://yigil.co.kr/api/v1/admins/signup/accept",
+        "http://3.34.236.45/api/v1/admins/signup/accept",
         {
           method: "POST",
           headers: {
@@ -248,7 +248,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://yigil.co.kr/api/v1/admins/signup/reject",
+        "http://3.34.236.45/api/v1/admins/signup/reject",
         {
           method: "POST",
           headers: {
@@ -287,7 +287,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "http://yigil.co.kr/api/v1/admins/signup/reject",
+        "http://3.34.236.45/api/v1/admins/signup/reject",
         {
           method: "POST",
           headers: {
@@ -340,7 +340,7 @@ const AdminSignUpPage: React.FC = () => {
     try {
       const accessToken = getCookie("accessToken");
       const response = await fetch(
-        `http://yigil.co.kr/api/v1/admins/signup/list?page=${encodeURIComponent(
+        `http://3.34.236.45/api/v1/admins/signup/list?page=${encodeURIComponent(
           page
         )}&dataCount=10`,
         {
