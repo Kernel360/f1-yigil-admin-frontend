@@ -24,7 +24,7 @@ const UserInfo: React.FC = () => {
     const accessToken = getCookie("accessToken");
 
     if (accessToken) {
-      fetch("https://admin.yigil.co.kr:8081/api/v1/admins/info", {
+      fetch("https://admin.yigil.co.kr/api/v1/admins/info", {
         headers: {
           Authorization: `${accessToken}`,
         },
@@ -71,7 +71,7 @@ const UserInfo: React.FC = () => {
           </PopoverContent>
         </Popover>
       ) : (
-        <Link to="/admin/login">
+        <Link to="/login">
           <Button>
             <EnvelopeOpenIcon className="mr-2 h-4 w-4" /> Login with Email
           </Button>
