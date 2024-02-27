@@ -24,7 +24,7 @@ const UserInfo: React.FC = () => {
     const accessToken = getCookie("accessToken");
 
     if (accessToken) {
-      fetch("http://localhost:8081/admin/api/v1/admins/info", {
+      fetch("https://admin.yigil.co.kr:8081/api/v1/admins/info", {
         headers: {
           Authorization: `${accessToken}`,
         },
