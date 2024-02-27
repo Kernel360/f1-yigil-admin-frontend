@@ -63,7 +63,7 @@ const LoginPage: React.FC = () => {
     }
     try {
       const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/login",
+        "http://admin.yigil.co.kr/api/v1/admins/login",
         {
           method: "POST",
           headers: {
@@ -113,7 +113,7 @@ const LoginPage: React.FC = () => {
     }
     try {
       const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/signup",
+        "http://admin.yigil.co.kr/api/v1/admins/signup",
         {
           method: "POST",
           headers: {
