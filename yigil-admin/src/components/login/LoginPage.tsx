@@ -2,7 +2,12 @@ import React, { useState } from "react";
 import Layout from "../Layout.tsx";
 import { useNavigate } from "react-router-dom";
 
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs.tsx";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs.tsx";
 import {
   Card,
   CardContent,
@@ -16,6 +21,8 @@ import { Label } from "@/components/ui/label.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { AlertBox } from "../snippet/AlertBox.tsx";
 import { SignUpDrawer } from "./SignUpDrawer.tsx";
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const LoginPage: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -62,16 +69,13 @@ const LoginPage: React.FC = () => {
       return; // 함수 종료
     }
     try {
-      const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/login",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email, password }),
-        }
-      );
+      const response = await fetch(`${apiBaseUrl}/api/v1/admins/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -112,16 +116,13 @@ const LoginPage: React.FC = () => {
       return; // 함수 종료
     }
     try {
-      const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/signup",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ email: new_email, nickname: new_name }),
-        }
-      );
+      const response = await fetch(`${apiBaseUrl}/api/v1/admins/signup`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: new_email, nickname: new_name }),
+      });
 
       if (!response.ok) {
         const errorData = await response.json();

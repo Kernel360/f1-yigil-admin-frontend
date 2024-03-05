@@ -1,7 +1,11 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { EnvelopeOpenIcon } from "@radix-ui/react-icons";
 import { Link } from "react-router-dom";
@@ -12,9 +16,11 @@ import {
 } from "@/components/ui/popover.tsx";
 
 interface UserInfoProps {
-  username: string;
+  nickname: string;
   profile_url: string;
 }
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
 const UserInfo: React.FC = () => {
   const [user, setUser] = useState<UserInfoProps | null>(null);
@@ -24,7 +30,7 @@ const UserInfo: React.FC = () => {
     const accessToken = getCookie("accessToken");
 
     if (accessToken) {
-      fetch("https://admin.yigil.co.kr/api/v1/admins/info", {
+      fetch(`${apiBaseUrl}/api/v1/admins/info`, {
         headers: {
           Authorization: `${accessToken}`,
         },
@@ -52,17 +58,22 @@ const UserInfo: React.FC = () => {
         <Popover>
           <PopoverTrigger asChild>
             <Avatar>
-              <AvatarImage src={user.profile_url} alt={`@${user.username}`} />
-              <AvatarFallback>{user.username[0]}</AvatarFallback>
+              <AvatarImage src={user.profile_url} alt={`@${user.nickname}`} />
+              <AvatarFallback>{user.nickname[0]}</AvatarFallback>
             </Avatar>
           </PopoverTrigger>
           <PopoverContent className="w-80">
             <div className="grid gap-4">
               <div className="space-y-2">
-                <h4 className="fond-medium leading-none">{user.username}</h4>
+                <h4 className="fond-medium leading-none">{user.nickname}</h4>
                 <p className="text-sm text-muted-foreground">
                   관리자님, 환영합니다!
                 </p>
+              </div>
+              <div>
+                <Link className="w-max" to="/my">
+                  <Button variant="outline">마이 페이지</Button>
+                </Link>
               </div>
               <div className="grid gap-2">
                 <Button onClick={handleLogout}>로그아웃</Button>

@@ -49,6 +49,8 @@ import {
   TableRow,
 } from "@/components/ui/table.tsx";
 
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
+
 export type AdminSignUp = {
   id: string;
   email: string;
@@ -167,7 +169,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/signup/accept",
+        `${apiBaseUrl}/api/v1/admins/signup/accept`,
         {
           method: "POST",
           headers: {
@@ -206,7 +208,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/signup/accept",
+        `${apiBaseUrl}/api/v1/admins/signup/accept`,
         {
           method: "POST",
           headers: {
@@ -248,7 +250,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/signup/reject",
+        `${apiBaseUrl}/api/v1/admins/signup/reject`,
         {
           method: "POST",
           headers: {
@@ -287,7 +289,7 @@ const AdminSignUpPage: React.FC = () => {
 
     try {
       const response = await fetch(
-        "https://admin.yigil.co.kr/api/v1/admins/signup/reject",
+        `${apiBaseUrl}/api/v1/admins/signup/reject`,
         {
           method: "POST",
           headers: {
@@ -340,7 +342,7 @@ const AdminSignUpPage: React.FC = () => {
     try {
       const accessToken = getCookie("accessToken");
       const response = await fetch(
-        `https://admin.yigil.co.kr/api/v1/admins/signup/list?page=${encodeURIComponent(
+        `${apiBaseUrl}/api/v1/admins/signup/list?page=${encodeURIComponent(
           page
         )}&dataCount=10`,
         {
