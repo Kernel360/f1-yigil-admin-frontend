@@ -1,1 +1,39 @@
-d
+name: Frontend CD
+
+on:
+  push:
+    branches: ["main"]
+
+defaults:
+  run:
+    working-directory: ./yigil-admin
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: frontend
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
+      - name: npm install library
+        run: npm ci
+      # npm 테스트 진행
+      - name: Run test
+        run: npm run test
+      # EC2 인스턴스 접속 및 애플리케이션 실행
+      - name: Application Run
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.EC2_HOST_DEV }}
+          username: ${{ secrets.EC2_USERNAME }}
+          key: ${{ secrets.EC2_KEY }}
+        
+          script: |
+            sh ./gitaction-admin-front.sh
