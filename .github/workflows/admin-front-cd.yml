@@ -20,7 +20,7 @@ jobs:
         with:
           node-version: 20
           cache: npm
-      - run: npm ci
+      - run: npm install typescript
       - run: npm test
       - run: npm run build
       # EC2 인스턴스 접속 및 애플리케이션 실행
