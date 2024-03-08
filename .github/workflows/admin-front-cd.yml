@@ -17,7 +17,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          sparse-checkout: frontend
+          sparse-checkout: yigil-admin
       - run: npm install typescript
       - uses: actions/setup-node@v4
         with:
