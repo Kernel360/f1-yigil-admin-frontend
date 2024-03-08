@@ -97,13 +97,16 @@ const MyPage: React.FC = () => {
     }
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     const formData = new FormData();
-    const fileInput = document.getElementById("picture");
+    const fileInput = document.getElementById("picture") as HTMLInputElement;
 
-    if (fileInput && fileInput.files[0]) {
+    if (fileInput && fileInput.files && fileInput.files.length > 0) {
       formData.append("profileImageFile", fileInput.files[0]);
+    } else {
+      setAlertName("파일 업로드 실패");
+      setMessage("파일을 업로드해주세요");
+      setIsOpen(true);
     }
 
     const accessToken = getCookie("accessToken");
@@ -115,7 +118,14 @@ const MyPage: React.FC = () => {
       },
       body: formData,
     })
-      .then((response) => response.json())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            "서버에서 오류가 발생하였습니다. 응답 코드: " + response.status
+          );
+        }
+        return response.json();
+      })
       .then((data) => {
         fetchUserInfo();
         setAlertName("업로드 성공");
