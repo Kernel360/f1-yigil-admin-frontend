@@ -15,11 +15,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: actions/checkout@v3
-        run: npm ci
-      # npm 테스트 진행
-      - name: Run build test
-        run: npm run build
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm test
+      - run: npm run build
       # EC2 인스턴스 접속 및 애플리케이션 실행
       - name: Application Run
         uses: appleboy/ssh-action@v0.1.6
