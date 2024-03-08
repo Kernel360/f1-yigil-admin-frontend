@@ -128,6 +128,7 @@ const AdminSignUpPage: React.FC = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
+              <DropdownMenuSeparator />
               <DropdownMenuItem
                 onClick={() => navigator.clipboard.writeText(adminSignUp.email)}
               >
@@ -362,7 +363,9 @@ const AdminSignUpPage: React.FC = () => {
         );
         setIsOpen(true);
       }
-      const { content, total_pages: newTotalPages } = await response.json();
+      const responseData = await response.json();
+      const { content, total_pages: newTotalPages } =
+        responseData.admin_sign_ups;
       setAdminSignUps(content);
       setTotalPages(newTotalPages);
 
