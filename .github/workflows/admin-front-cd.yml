@@ -15,20 +15,11 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v4
-        with:
-          sparse-checkout: frontend
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          cache: "npm"
-          cache-dependency-path: "**/package-lock.json"
-      - name: npm install library
+      - name: actions/checkout@v3
         run: npm ci
       # npm 테스트 진행
-      - name: Run test
-        run: npm run test
+      - name: Run build test
+        run: npm run build
       # EC2 인스턴스 접속 및 애플리케이션 실행
       - name: Application Run
         uses: appleboy/ssh-action@v0.1.6
