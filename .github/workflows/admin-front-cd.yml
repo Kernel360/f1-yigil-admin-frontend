@@ -15,12 +15,15 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-node@v3
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: frontend
+      - run: npm install typescript
+      - uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: npm
-      - run: npm install typescript
+          cache: "npm"
+          cache-dependency-path: "**/package-lock.json"
       - run: npm test
       - run: npm run build
       # EC2 인스턴스 접속 및 애플리케이션 실행
