@@ -92,7 +92,7 @@ const LoginPage: React.FC = () => {
       document.cookie = `accessToken=Bearer ${access_token}; path=/;`;
       document.cookie = `refreshToken=${refresh_token}; path=/;`;
 
-      navigate("/admin");
+      navigate("/");
     } catch (error) {
       setErrorName("로그인 오류");
       setErrorMessage("로그인 처리 중 오류가 발생했습니다.");
