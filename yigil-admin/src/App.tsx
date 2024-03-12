@@ -6,6 +6,7 @@ import AdminSignUpPage from "./components/admin_sign_up/AdminSignUpPage.tsx";
 import MyPage from "./components/my_page/MyPage.tsx";
 import NotFound from "./components/NotFound.tsx";
 import NoticePage from "./components/notice/NoticePage.tsx";
+import MemberPage from "./components/member/MemberPage.tsx";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/login" element={<LoginPage />} />
         <Route path="/admin" element={<AdminSignUpPage />} />
         <Route path="/notice" element={<NoticePage />} />
+        <Route path="/member" element={<MemberPage />} />
         <Route path="/my" element={<MyPage />} />
         <Route path="/*" element={<NotFound />} />
       </Routes>
