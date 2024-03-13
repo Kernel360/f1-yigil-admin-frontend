@@ -37,7 +37,7 @@ const UserInfo: React.FC = () => {
       })
         .then((response) => response.json())
         .then((data) => setUser(data))
-        .catch((error) => console.error("Error:", error));
+        .catch(() => handleLogout());
     }
   }, []);
 

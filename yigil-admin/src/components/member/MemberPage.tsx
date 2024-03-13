@@ -33,6 +33,7 @@ import {
 } from "@radix-ui/react-icons";
 import {
   DropdownMenu,
+  DropdownMenuItem,
   DropdownMenuCheckboxItem,
   DropdownMenuContent,
   DropdownMenuLabel,
@@ -215,7 +216,7 @@ const MemberPage: React.FC = () => {
       id: "actions",
       enableHiding: false,
       cell: ({ row }) => {
-        //const member = row.original;
+        const member = row.original;
 
         return (
           <DropdownMenu>
@@ -228,6 +229,15 @@ const MemberPage: React.FC = () => {
             <DropdownMenuContent align="end">
               <DropdownMenuLabel>Actions</DropdownMenuLabel>
               <DropdownMenuSeparator />
+              {member.status !== MemberStatus.Banned ? (
+                <DropdownMenuItem onClick={() => ban(member.member_id)}>
+                  정지
+                </DropdownMenuItem>
+              ) : (
+                <DropdownMenuItem onClick={() => unban(member.member_id)}>
+                  정지 해제
+                </DropdownMenuItem>
+              )}
             </DropdownMenuContent>
           </DropdownMenu>
         );
@@ -289,6 +299,72 @@ const MemberPage: React.FC = () => {
       console.error(error);
       setAlertName("멤버 목록을 불러올 수 없습니다");
       setMessage("공지사항 목록을 불러오던 중 오류가 발생하였습니다.");
+      setIsOpen(true);
+    }
+  };
+
+  const ban = async (id: number) => {
+    try {
+      const accessToken = getCookie("accessToken");
+      const response = await fetch(`${apiBaseUrl}/api/v1/members/ban`, {
+        method: "POST",
+        headers: {
+          Authorization: `${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ids: [id],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAlertName("사용자 정지에 실패했습니다.");
+        setMessage(errorData.message);
+        setIsOpen(true);
+        return;
+      }
+
+      setAlertName("사용자 정지 완료");
+      setMessage("사용자 정지 처리가 완료되었습니다.");
+      setIsOpen(true);
+      fetchMembers();
+    } catch (error) {
+      setAlertName("사용자 정지에 실패했습니다.");
+      setMessage("사용자 정지 처리 중 오류가 발생하였습니다");
+      setIsOpen(true);
+    }
+  };
+
+  const unban = async (id: number) => {
+    try {
+      const accessToken = getCookie("accessToken");
+      const response = await fetch(`${apiBaseUrl}/api/v1/members/unban`, {
+        method: "POST",
+        headers: {
+          Authorization: `${accessToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ids: [id],
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAlertName("사용자 정지 해제에 실패했습니다");
+        setMessage(errorData.message);
+        setIsOpen(true);
+        return;
+      }
+
+      setAlertName("사용자 정지 해제 완료");
+      setMessage("사용자 정지 해제 처리가 완료되었습니다");
+      setIsOpen(true);
+      fetchMembers();
+    } catch (error) {
+      setAlertName("사용자 정지 해제에 실패했습니다");
+      setMessage("사용자 정지 해제 처리 중 오류가 발생하였습니다");
       setIsOpen(true);
     }
   };
