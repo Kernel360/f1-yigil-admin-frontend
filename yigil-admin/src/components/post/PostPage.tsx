@@ -353,7 +353,7 @@ const PostPage: React.FC = () => {
                               <Card>
                                 <CardContent className="flex aspect-square items-center justify-center p-6">
                                   <img
-                                    src={'http://' + url}
+                                    src={url}
                                     className="object-cover rounded-md"
                                   />
                                 </CardContent>
