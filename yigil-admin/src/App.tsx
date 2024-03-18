@@ -8,7 +8,7 @@ import NotFound from "./components/NotFound.tsx";
 import NoticePage from "./components/notice/NoticePage.tsx";
 import MemberPage from "./components/member/MemberPage.tsx";
 import PostPage from "./components/post/PostPage.tsx";
-import TestPage from "./components/test.tsx";
+import TestPage from "./components/Test.tsx";
 
 function App() {
   return (
