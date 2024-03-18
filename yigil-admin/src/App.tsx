@@ -8,6 +8,7 @@ import NotFound from "./components/NotFound.tsx";
 import NoticePage from "./components/notice/NoticePage.tsx";
 import MemberPage from "./components/member/MemberPage.tsx";
 import PostPage from "./components/post/PostPage.tsx";
+import TestPage from "./components/test.tsx";
 
 function App() {
   return (
@@ -20,6 +21,7 @@ function App() {
         <Route path="/member" element={<MemberPage />} />
         <Route path="/post" element={<PostPage />} />
         <Route path="/my" element={<MyPage />} />
+        <Route path="/test" element={<TestPage />} />
         <Route path="/*" element={<NotFound />} />
       </Routes>
     </Router>
