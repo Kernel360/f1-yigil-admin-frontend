@@ -9,10 +9,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "../ui/badge.tsx";
 import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import {
   RocketIcon,
   HeartIcon,
   ChatBubbleIcon,
   CommitIcon,
+  CaretSortIcon,
 } from "@radix-ui/react-icons";
 import {
   Card,
@@ -51,6 +57,7 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Separator } from "@/components/ui/separator";
+import { access } from "fs";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -101,7 +108,21 @@ interface SpotDetail {
   writer_social_login_type: SocialLoginType;
 }
 
-interface CourseDetail {}
+interface CourseDetail {
+  course_id: number;
+  title: string;
+  content: string;
+  map_static_image_url: string;
+  created_at: string;
+  rate: number;
+  favor_count: number;
+  comment_count: number;
+  writer_id: number;
+  writer_name: string;
+  writer_profile_image_url: string;
+  writer_social_login_type: SocialLoginType;
+  spots: SpotDetail[];
+}
 
 const SocialLoginBadge: React.FC<{ type: SocialLoginType }> = ({ type }) => {
   switch (type) {
@@ -186,6 +207,12 @@ const PostPage: React.FC = () => {
 
   const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
   const [courseDetail, setCourseDetail] = useState<CourseDetail>();
+  const [isCourseSpotOpen, setIsCourseSpotOpen] = useState(false);
+  const [courseComments, setCourseComments] = useState<Comment[]>([]);
+  const [courseCommentPage, setCourseCommentPage] = useState(1);
+  const [totalCourseCommentPage, setTotalCourseCommentPage] = useState(99);
+  const [isCourseCommentLoading, setIsCourseCommentLoading] = useState(false);
+  const [courseCommentRef, inViewCourseComment] = useInView();
 
   const fetchSpots = async () => {
     if (isLoading || spotPage > totalSpotPage) return;
@@ -303,6 +330,35 @@ const PostPage: React.FC = () => {
     }
   }, []);
 
+  const retrieveCourse = useCallback(async (id: number) => {
+    setSelectedCourseId(id);
+    setCourseComments([]);
+    setCourseCommentPage(1);
+    try {
+      const accessToken = getCookie("accessToken");
+      const response = await fetch(`${apiBaseUrl}/api/v1/courses/${id}`, {
+        method: "GET",
+        headers: {
+          Authorization: `${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAlertName("일정 조회에 실패했습니다");
+        setMessage(errorData.message);
+        setIsOpen(true);
+        return;
+      }
+      const responseData = await response.json();
+      setCourseDetail(responseData);
+    } catch (error) {
+      setAlertName("일정 조회에 실패했습니다");
+      setMessage("해당 일정을 조회하던 중 오류가 발생하였습니다");
+      setIsOpen(true);
+    }
+  }, []);
+
   const deleteSpot = async (id: number) => {
     try {
       const accessToken = getCookie("accessToken");
@@ -330,6 +386,37 @@ const PostPage: React.FC = () => {
     } catch (error) {
       setAlertName("리뷰 삭제에 실패했습니다.");
       setMessage("리뷰 삭제 처리 중 오류가 발생하였습니다.");
+      setIsOpen(true);
+    }
+  };
+
+  const deleteCourse = async (id: number) => {
+    try {
+      const accessToken = getCookie("accessToken");
+      const response = await fetch(`${apiBaseUrl}/api/v1/courses/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAlertName("코스 삭제에 실패했습니다");
+        setMessage(errorData.message);
+        setIsOpen(true);
+        return;
+      }
+
+      setAlertName("코스 삭제 완료");
+      setMessage("코스가 성공적으로 삭제되었습니다.");
+      setIsOpen(true);
+      setCourses([]);
+      setCoursePage(1);
+    } catch (error) {
+      setAlertName("코스 삭제에 실패했습니다.");
+      setMessage("코스 삭제 처리 중 오류가 발생하였습니다");
       setIsOpen(true);
     }
   };
@@ -382,6 +469,55 @@ const PostPage: React.FC = () => {
       fetchSpotComments(selectedSpotId);
     }
   }, [inViewSpotComment, selectedSpotId, fetchSpotComments]);
+
+  const fetchCourseComments = useCallback(
+    async (id: number) => {
+      if (isCourseCommentLoading || courseCommentPage > totalCourseCommentPage)
+        return;
+      setIsCourseCommentLoading(true);
+      try {
+        const accessToken = getCookie("accessToken");
+        const response = await fetch(
+          `${apiBaseUrl}/api/v1/comments/${id}?page=${encodeURIComponent(
+            courseCommentPage
+          )}&size=5`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (!response.ok) {
+          const errorData = await response.json();
+          setAlertName("댓글 조회에 실패했습니다");
+          setMessage(errorData.message);
+          setIsOpen(true);
+          return;
+        }
+        const responseData = await response.json();
+        const { content, total_pages } = responseData.comments;
+        setCourseComments((prevComments) => [...prevComments, ...content]);
+        setCourseCommentPage((prevPage) => (prevPage += 1));
+        setTotalCourseCommentPage(total_pages);
+        if (total_pages < 1) setTotalCourseCommentPage(99);
+      } catch (error) {
+        setAlertName("댓글 목록을 불러올 수 없습니다");
+        setMessage("댓글 목록을 불러오던 중 오류가 발생하였습니다");
+        setIsOpen(true);
+      } finally {
+        setIsCourseCommentLoading(false);
+      }
+    },
+    [courseCommentPage, totalCourseCommentPage, isCourseCommentLoading]
+  );
+
+  useEffect(() => {
+    if (inViewCourseComment && selectedCourseId != null) {
+      fetchCourseComments(selectedCourseId);
+    }
+  }, [inViewCourseComment, selectedCourseId, fetchCourseComments]);
 
   const deleteComment = async (id: number) => {
     try {
@@ -744,7 +880,7 @@ const PostPage: React.FC = () => {
                           ? "scale-[0.80]"
                           : "hover:scale-[0.90]"
                       }`}
-                      //onClick={() => retrieveCourse(course.course_id)}
+                      onClick={() => retrieveCourse(course.course_id)}
                     >
                       <CardHeader>
                         <div className="flex justify-between">
@@ -782,7 +918,310 @@ const PostPage: React.FC = () => {
                 </ScrollArea>
               </ResizablePanel>
               <ResizableHandle withHandle />
-              <ResizablePanel defaultSize={50}></ResizablePanel>
+              <ResizablePanel defaultSize={50}>
+                {courseDetail ? (
+                  <ScrollArea className="h-[540px] p-5">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="float-right">X</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>일정 삭제</DialogTitle>
+                          <DialogDescription>
+                            해당 일정은 사용자가 작성한 일정이며, 사용자에게
+                            부정적인 경험을 줄 수 있습니다
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button variant="secondary">취소</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button
+                              onClick={() =>
+                                deleteCourse(courseDetail.course_id)
+                              }
+                            >
+                              삭제
+                            </Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                    <div className="px-10 py-3">
+                      <h1 className="scroll-m-20 text-2xl font-bold tracking-tight lg:text-2xl">
+                        {courseDetail.title}
+                      </h1>
+                      <p className="text-sm text-gray-500">
+                        일정 고유 아이디: #{courseDetail.course_id}
+                      </p>
+                      <Card className="text-sm mt-2 p-2 rounded-xl">
+                        {courseDetail.content}
+                      </Card>
+                    </div>
+                    <div className="px-10 py-3 flex justify-between">
+                      <HoverCard>
+                        <HoverCardTrigger asChild>
+                          <Button variant="link" className="p-0">
+                            @{courseDetail.writer_name}
+                          </Button>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-50">
+                          <div className="flex justify-between space-x-4">
+                            <Avatar>
+                              <AvatarImage
+                                src={courseDetail.writer_profile_image_url}
+                              />
+                              <AvatarFallback>
+                                {courseDetail.writer_name}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="space-y-1">
+                              <h4 className="text-sm font-semibold">
+                                @{courseDetail.writer_name}#
+                                {courseDetail.writer_id}
+                              </h4>
+                              <div className="flex items-center pt-2">
+                                <ChatBubbleIcon className="mr-2 h-4 w-4 opacity-70" />{" "}
+                                <SocialLoginBadge
+                                  type={courseDetail.writer_social_login_type}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        </HoverCardContent>
+                      </HoverCard>
+                      <span className="text-sm text-gray-500">
+                        {timeSince(courseDetail.created_at)}
+                      </span>
+                    </div>
+                    <div className="px-10 py-3">
+                      <h3 className="text-xl font-bold">위치</h3>
+                      <img
+                        className="my-3 w-full"
+                        src={courseDetail.map_static_image_url}
+                      />
+                    </div>
+                    <div className="px-10 py-3">
+                      <p className="font-semibold">
+                        장소 📌 {courseDetail.spots.length}
+                      </p>
+                      <p className="font-semibold">
+                        별점 ⭐️ {courseDetail.rate}
+                      </p>
+                      <p className="font-semibold">
+                        좋아요 수 ❤️ {courseDetail.favor_count}
+                      </p>
+                      <p className="font-semibold">
+                        댓글 수 💬 {courseDetail.comment_count}
+                      </p>
+                    </div>
+                    <Collapsible
+                      open={isCourseSpotOpen}
+                      onOpenChange={setIsCourseSpotOpen}
+                      className="space-y-2"
+                    >
+                      <div className="w-[350px] flex items-center space-x-4 px-10 mt-5">
+                        <h4 className="text-sm font-semibold">
+                          {isCourseSpotOpen
+                            ? "리뷰 정보 닫기"
+                            : "리뷰 정보 보기"}
+                        </h4>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <CaretSortIcon className="h-4 w-4" />
+                            <span className="sr-only">Toggle</span>
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      <CollapsibleContent>
+                        {courseDetail.spots.map(
+                          (courseSpot, courseSpotIndex) => (
+                            <Card className="m-5">
+                              <Carousel className="w-full max-w-xs mx-auto my-5">
+                                <CarouselContent>
+                                  {courseSpot.image_urls.map(
+                                    (courseSpotUrl, courseSpotUrlIndex) => (
+                                      <CarouselItem key={courseSpotUrlIndex}>
+                                        <div className="p-1">
+                                          <Card>
+                                            <CardContent className="flex aspect-square items-center justify-center p-6">
+                                              <img
+                                                src={courseSpotUrl}
+                                                className="object-cover rounded-md"
+                                              />
+                                            </CardContent>
+                                          </Card>
+                                        </div>
+                                      </CarouselItem>
+                                    )
+                                  )}
+                                </CarouselContent>
+                                <CarouselPrevious />
+                                <CarouselNext />
+                              </Carousel>
+                              <div className="px-10 py-3">
+                                <h1 className="scroll-m-20 text-2xl font-bold tracking-tight lg:text-2xl">
+                                  {courseSpot.place_name}
+                                </h1>
+                                <p className="text-sm text-gray-500">
+                                  리뷰 고유 아이디: #{courseSpot.spot_id}
+                                </p>
+                                <Card className="text-sm mt-2 p-2 rounded-xl">
+                                  {courseSpot.content}
+                                </Card>
+                              </div>
+                              <div className="px-10 py-3">
+                                <h3 className="text-xm font-bold">위치</h3>
+                                <img
+                                  className="my-3 w-full"
+                                  src={courseSpot.map_static_image_url}
+                                />
+                                <p className="text-sm text-gray-500">
+                                  🗺️ {courseSpot.address}
+                                </p>
+                                <p className="text-sm text-gray-500">
+                                  🧭 ({courseSpot.x}, {courseSpot.y})
+                                </p>
+                              </div>
+                              <div className="px-10 py-3">
+                                <p className="font-semibold">
+                                  별점 ⭐️ {courseSpot.rate}
+                                </p>
+                              </div>
+                            </Card>
+                          )
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
+                    <div className="px-10 py-3">
+                      <h3 className="text-xl font-bold">댓글</h3>
+                      {courseComments.map((comment, index) => (
+                        <Card key={index} className="mt-2 p-5 rounded-md">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="link"
+                                className="text-xs text-gray-500 float-right px-0 pl-4 py-0 pb-4"
+                              >
+                                X
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                              <DialogHeader>
+                                <DialogTitle>댓글 삭제</DialogTitle>
+                                <DialogDescription>
+                                  해당 리뷰는 사용자가 작성한 댓글이며,
+                                  사용자에게 부정적인 영향을 줄 수 있습니다
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <DialogClose asChild>
+                                  <Button variant="secondary">취소</Button>
+                                </DialogClose>
+                                <DialogClose asChild>
+                                  <Button
+                                    onClick={() => deleteComment(comment.id)}
+                                  >
+                                    삭제
+                                  </Button>
+                                </DialogClose>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                          <div className="flex justify-between">
+                            <HoverCard>
+                              <HoverCardTrigger asChild>
+                                <Button variant="link" className="p-0 h-auto">
+                                  @{comment.member_nickname}
+                                </Button>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-50">
+                                <div className="flex justify-between space-x-4">
+                                  <Avatar></Avatar>
+                                </div>
+                              </HoverCardContent>
+                            </HoverCard>
+                            <p className="text-sm text-gray-500">
+                              {timeSince(comment.created_at)}
+                            </p>
+                          </div>
+                          <Separator className="my-3" />
+                          <p className="text-sm text-gray-500">
+                            {comment.content}
+                          </p>
+                          {comment.children.map((reply, r_index) => (
+                            <Card
+                              key={r_index}
+                              className="mt-2 pt-4 pb-2 px-5 rounded-md"
+                            >
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="link"
+                                    className="text-xs text-gray-500 float-right px-0 pl-4 py-0 pb-4"
+                                  >
+                                    X
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[425px]">
+                                  <DialogHeader>
+                                    <DialogTitle>댓글 삭제</DialogTitle>
+                                    <DialogDescription>
+                                      해당 리뷰는 사용자가 작성한 댓글이며,
+                                      사용자에게 부정적인 영향을 줄 수 있습니다
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <DialogFooter>
+                                    <DialogClose asChild>
+                                      <Button variant="secondary">취소</Button>
+                                    </DialogClose>
+                                    <DialogClose asChild>
+                                      <Button
+                                        onClick={() => deleteComment(reply.id)}
+                                      >
+                                        삭제
+                                      </Button>
+                                    </DialogClose>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
+                              <div className="flex justify-between">
+                                <HoverCard>
+                                  <HoverCardTrigger asChild>
+                                    <Button
+                                      variant="link"
+                                      className="p-0 h-auto"
+                                    >
+                                      ↪ @{reply.member_nickname}
+                                    </Button>
+                                  </HoverCardTrigger>
+                                  <HoverCardContent className="w-50">
+                                    <div className="flex justify-between space-x-4">
+                                      <Avatar></Avatar>
+                                    </div>
+                                  </HoverCardContent>
+                                </HoverCard>
+                                <p className="text-sm text-gray-500">
+                                  {timeSince(reply.created_at)}
+                                </p>
+                              </div>
+                              <Separator className="my-3" />
+                              <p className="text-sm text-gray-500">
+                                {reply.content}
+                              </p>
+                            </Card>
+                          ))}
+                        </Card>
+                      ))}
+                      <div ref={courseCommentRef} />
+                    </div>
+                  </ScrollArea>
+                ) : (
+                  <span></span>
+                )}
+              </ResizablePanel>
             </ResizablePanelGroup>
           </TabsContent>
         </Tabs>
