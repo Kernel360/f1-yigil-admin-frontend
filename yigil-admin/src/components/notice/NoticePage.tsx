@@ -6,6 +6,7 @@ import {
   ChevronDownIcon,
   DotsHorizontalIcon,
   RocketIcon,
+  ReloadIcon,
   EnvelopeClosedIcon,
 } from "@radix-ui/react-icons";
 
@@ -113,6 +114,8 @@ const NoticePage: React.FC = () => {
   const [isReadFormOpen, setIsReadFormOpen] = useState(false);
   const [isWriteFormOpen, setIsWriteFormOpen] = useState(false);
   const [isModifyFormOpen, setIsModifyFormOpen] = useState(false);
+
+  const [isLoadAnimation, setIsLoadAmination] = useState(false);
 
   const columns: ColumnDef<Notice>[] = [
     {
@@ -335,6 +338,7 @@ const NoticePage: React.FC = () => {
   };
 
   const getModifyNotice = async (id: number) => {
+    setIsLoadAmination(true);
     const accessToken = getCookie("accessToken");
 
     try {
@@ -353,6 +357,7 @@ const NoticePage: React.FC = () => {
           errorData.message || "공지사항 조회 중 오류가 발생하였습니다."
         );
         setIsOpen(true);
+        setIsLoadAmination(false);
         return;
       }
 
@@ -366,10 +371,13 @@ const NoticePage: React.FC = () => {
       setAlertName("공지사항 조회에 실패하였습니다");
       setMessage("공지사항 조회 중 오류가 발생하였습니다.");
       setIsOpen(true);
+    } finally {
+      setIsLoadAmination(false);
     }
   };
 
   const submitNotice = async () => {
+    setIsLoadAmination(true);
     const accessToken = getCookie("accessToken");
 
     try {
@@ -390,6 +398,7 @@ const NoticePage: React.FC = () => {
         setAlertName("공지사항 등록에 실패했습니다.");
         setMessage(errorData.message);
         setIsOpen(true);
+        setIsLoadAmination(false);
         return;
       }
 
@@ -405,6 +414,8 @@ const NoticePage: React.FC = () => {
       setAlertName("공지사항 등록에 실패했습니다");
       setMessage("공지사항 등록 중 오류가 발생하였습니다.");
       setIsOpen(true);
+    } finally {
+      setIsLoadAmination(false);
     }
   };
 
@@ -607,7 +618,16 @@ const NoticePage: React.FC = () => {
                   />
                 </div>
                 <DialogFooter>
-                  <Button onClick={submitNotice}>등록하기</Button>
+                  {!isLoadAnimation ? (
+                    <Button disabled={isLoadAnimation} onClick={submitNotice}>
+                      등록하기
+                    </Button>
+                  ) : (
+                    <Button disabled>
+                      <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                      Please wait
+                    </Button>
+                  )}
                 </DialogFooter>
               </DialogContent>
             </Dialog>
@@ -692,9 +712,19 @@ const NoticePage: React.FC = () => {
             />
           </div>
           <DialogFooter>
-            <Button onClick={() => modifyNotice(modifyNoticeId)}>
-              수정하기
-            </Button>
+            {!isLoadAnimation ? (
+              <Button
+                disabled={isLoadAnimation}
+                onClick={() => modifyNotice(modifyNoticeId)}
+              >
+                수정하기
+              </Button>
+            ) : (
+              <Button disabled>
+                <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                Please wait
+              </Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>

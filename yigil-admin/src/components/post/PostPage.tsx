@@ -8,7 +8,12 @@ import { AlertBox } from "../snippet/AlertBox";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Button } from "@/components/ui/button.tsx";
 import { Badge } from "../ui/badge.tsx";
-import { RocketIcon, HeartIcon, ChatBubbleIcon } from "@radix-ui/react-icons";
+import {
+  RocketIcon,
+  HeartIcon,
+  ChatBubbleIcon,
+  CommitIcon,
+} from "@radix-ui/react-icons";
 import {
   Card,
   CardContent,
@@ -31,6 +36,16 @@ import {
   CarouselContent,
 } from "@/components/ui/carousel.tsx";
 import {
+  Dialog,
+  DialogContent,
+  DialogClose,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
   HoverCard,
   HoverCardContent,
   HoverCardTrigger,
@@ -46,6 +61,18 @@ export type Spot = {
   created_at: string;
   owner_nickname: string;
   owner_profile_image_url: string;
+  favor_count: number;
+  comment_count: number;
+};
+
+export type Course = {
+  course_id: number;
+  title: string;
+  description: string;
+  created_at: string;
+  owner_nickname: string;
+  owner_profile_image_url: string;
+  spot_count: number;
   favor_count: number;
   comment_count: number;
 };
@@ -74,6 +101,8 @@ interface SpotDetail {
   writer_social_login_type: SocialLoginType;
 }
 
+interface CourseDetail {}
+
 const SocialLoginBadge: React.FC<{ type: SocialLoginType }> = ({ type }) => {
   switch (type) {
     case SocialLoginType.Kakao:
@@ -98,10 +127,6 @@ export type Reply = {
   member_id: number;
   content: string;
   created_at: string;
-};
-
-export type Course = {
-  string: string;
 };
 
 function timeSince(dateString: string): string {
@@ -141,9 +166,11 @@ const PostPage: React.FC = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { ref, inView } = useInView();
 
-  // const [courses, setCourses] = useState<Course[]>([]);
-  // const [coursePage, setCoursePage] = useState(1);
-  // const [totalCoursePage, setTotalCoursePage] = useState(0);
+  const [courses, setCourses] = useState<Course[]>([]);
+  const [coursePage, setCoursePage] = useState(1);
+  const [totalCoursePage, setTotalCoursePage] = useState(99);
+  const [isCourseLoading, setIsCourseLoading] = useState(false);
+  const [courseRef, inViewCourse] = useInView();
 
   const [alertName, setAlertName] = useState("");
   const [message, setMessage] = useState("");
@@ -156,6 +183,9 @@ const PostPage: React.FC = () => {
   const [totalSpotCommentPage, setTotalSpotCommentPage] = useState(99);
   const [isSpotCommentLoading, setIsSpotCommentLoading] = useState(false);
   const [spotCommentRef, inViewSpotComment] = useInView();
+
+  const [selectedCourseId, setSelectedCourseId] = useState<number | null>(null);
+  const [courseDetail, setCourseDetail] = useState<CourseDetail>();
 
   const fetchSpots = async () => {
     if (isLoading || spotPage > totalSpotPage) return;
@@ -200,6 +230,50 @@ const PostPage: React.FC = () => {
     if (inView) fetchSpots();
   }, [inView]);
 
+  const fetchCourses = async () => {
+    if (isCourseLoading || coursePage > totalCoursePage) return;
+    setIsCourseLoading(true);
+    try {
+      const accessToken = getCookie("accessToken");
+      const response = await fetch(
+        `${apiBaseUrl}/api/v1/courses?page=${encodeURIComponent(
+          coursePage
+        )}&size=5`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `${accessToken}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAlertName("일정 목록을 불러올 수 없습니다");
+        setMessage(errorData.message);
+        setIsOpen(true);
+        return;
+      }
+
+      const responseData = await response.json();
+      const { content, total_pages } = responseData.courses;
+      setCourses((prevCourses) => [...prevCourses, ...content]);
+      setCoursePage((prevPage) => (prevPage += 1));
+      setTotalCoursePage(total_pages);
+    } catch (error) {
+      setAlertName("일정 목록을 불러올 수 없습니다");
+      setMessage("일정 목록을 불러오던 중 오류가 발생하였습니다");
+      setIsOpen(true);
+    } finally {
+      setIsCourseLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (inViewCourse) fetchCourses();
+  }, [inViewCourse]);
+
   const retrieveSpot = useCallback(async (id: number) => {
     setSelectedSpotId(id);
     setSpotComments([]);
@@ -228,6 +302,37 @@ const PostPage: React.FC = () => {
       setIsOpen(true);
     }
   }, []);
+
+  const deleteSpot = async (id: number) => {
+    try {
+      const accessToken = getCookie("accessToken");
+      const response = await fetch(`${apiBaseUrl}/api/v1/spots/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAlertName("리뷰 삭제에 실패했습니다.");
+        setMessage(errorData.message);
+        setIsOpen(true);
+        return;
+      }
+
+      setAlertName("리뷰 삭제 완료");
+      setMessage("리뷰가 성공적으로 삭제되었습니다.");
+      setIsOpen(true);
+      setSpots([]);
+      setSpotPage(1);
+    } catch (error) {
+      setAlertName("리뷰 삭제에 실패했습니다.");
+      setMessage("리뷰 삭제 처리 중 오류가 발생하였습니다.");
+      setIsOpen(true);
+    }
+  };
 
   const fetchSpotComments = useCallback(
     async (id: number) => {
@@ -278,6 +383,36 @@ const PostPage: React.FC = () => {
     }
   }, [inViewSpotComment, selectedSpotId, fetchSpotComments]);
 
+  const deleteComment = async (id: number) => {
+    try {
+      const accessToken = getCookie("accessToken");
+      const response = await fetch(`${apiBaseUrl}/api/v1/comments/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `${accessToken}`,
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setAlertName("댓글 삭제에 실패했습니다.");
+        setMessage(errorData.message);
+        setIsOpen(true);
+        return;
+      }
+
+      setAlertName("댓글 삭제 완료");
+      setMessage("댓글이 성공적으로 삭제되었습니다.");
+      setIsOpen(true);
+      setSpotComments([]);
+    } catch (error) {
+      setAlertName("댓글 삭제에 실패했습니다.");
+      setMessage("댓글 삭제 처리 중 오류가 발생하였습니다.");
+      setIsOpen(true);
+    }
+  };
+
   return (
     <Layout>
       <div className="w-[1100px] my-10 mx-auto">
@@ -303,7 +438,11 @@ const PostPage: React.FC = () => {
                   {spots.map((spot, index) => (
                     <Card
                       key={index}
-                      className="mb-3 duration-150 hover:scale-[0.90]"
+                      className={`mb-3 duration-150 ${
+                        selectedSpotId === spot.spot_id
+                          ? "scale-[0.80]"
+                          : "hover:scale-[0.90]"
+                      }`}
                       onClick={() => retrieveSpot(spot.spot_id)}
                     >
                       <CardHeader>
@@ -342,6 +481,32 @@ const PostPage: React.FC = () => {
               <ResizablePanel defaultSize={50}>
                 {spotDetail ? (
                   <ScrollArea className="h-[540px] p-5">
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button className="float-right">X</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader>
+                          <DialogTitle>리뷰 삭제</DialogTitle>
+                          <DialogDescription>
+                            해당 리뷰는 사용자가 작성한 리뷰이며, 사용자에게
+                            부정적인 영향을 줄 수 있습니다
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button variant="secondary">취소</Button>
+                          </DialogClose>
+                          <DialogClose asChild>
+                            <Button
+                              onClick={() => deleteSpot(spotDetail.spot_id)}
+                            >
+                              삭제
+                            </Button>
+                          </DialogClose>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
                     <Carousel
                       className="w-full max-w-xs mx-auto mb-5
                     "
@@ -372,9 +537,9 @@ const PostPage: React.FC = () => {
                       <p className="text-sm text-gray-500">
                         리뷰 고유 아이디: #{spotDetail.spot_id}
                       </p>
-                      <p className="text-sm mt-2 p-2 bg-slate-100 rounded-xl">
+                      <Card className="text-sm mt-2 p-2 rounded-xl">
                         {spotDetail.content}
-                      </p>
+                      </Card>
                     </div>
                     <div className="px-10 py-3 flex justify-between">
                       <HoverCard>
@@ -425,23 +590,51 @@ const PostPage: React.FC = () => {
                       </p>
                     </div>
                     <div className="px-10 py-3">
-                      <p className="font-semibold text-gray-500">
+                      <p className="font-semibold">
                         별점 ⭐️ {spotDetail.rate}
                       </p>
-                      <p className="font-semibold text-gray-500">
+                      <p className="font-semibold">
                         좋아요 수 ❤️ {spotDetail.favor_count}
                       </p>
-                      <p className="font-semibold text-gray-500">
+                      <p className="font-semibold">
                         댓글 수 💬 {spotDetail.comment_count}
                       </p>
                     </div>
                     <div className="px-10 py-3">
                       <h3 className="text-xl font-bold">댓글</h3>
                       {spotComments.map((comment, index) => (
-                        <div
-                          key={index}
-                          className="mt-2 p-5 bg-slate-100 rounded-md"
-                        >
+                        <Card key={index} className="mt-2 p-5 rounded-md">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button
+                                variant="link"
+                                className="text-xs text-gray-500 float-right px-0 pl-4 py-0 pb-4"
+                              >
+                                X
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="sm:max-w-[425px]">
+                              <DialogHeader>
+                                <DialogTitle>댓글 삭제</DialogTitle>
+                                <DialogDescription>
+                                  해당 리뷰는 사용자가 작성한 댓글이며,
+                                  사용자에게 부정적인 영향을 줄 수 있습니다
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter>
+                                <DialogClose asChild>
+                                  <Button variant="secondary">취소</Button>
+                                </DialogClose>
+                                <DialogClose asChild>
+                                  <Button
+                                    onClick={() => deleteComment(comment.id)}
+                                  >
+                                    삭제
+                                  </Button>
+                                </DialogClose>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
                           <div className="flex justify-between">
                             <HoverCard>
                               <HoverCardTrigger asChild>
@@ -464,10 +657,41 @@ const PostPage: React.FC = () => {
                             {comment.content}
                           </p>
                           {comment.children.map((reply, r_index) => (
-                            <div
+                            <Card
                               key={r_index}
-                              className="mt-2 pt-4 pl-5 bg-slate-100 rounded-md"
+                              className="mt-2 pt-4 pb-2 px-5 rounded-md"
                             >
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="link"
+                                    className="text-xs text-gray-500 float-right px-0 pl-4 py-0 pb-4"
+                                  >
+                                    X
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent className="sm:max-w-[425px]">
+                                  <DialogHeader>
+                                    <DialogTitle>댓글 삭제</DialogTitle>
+                                    <DialogDescription>
+                                      해당 리뷰는 사용자가 작성한 댓글이며,
+                                      사용자에게 부정적인 영향을 줄 수 있습니다
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <DialogFooter>
+                                    <DialogClose asChild>
+                                      <Button variant="secondary">취소</Button>
+                                    </DialogClose>
+                                    <DialogClose asChild>
+                                      <Button
+                                        onClick={() => deleteComment(reply.id)}
+                                      >
+                                        삭제
+                                      </Button>
+                                    </DialogClose>
+                                  </DialogFooter>
+                                </DialogContent>
+                              </Dialog>
                               <div className="flex justify-between">
                                 <HoverCard>
                                   <HoverCardTrigger asChild>
@@ -492,9 +716,9 @@ const PostPage: React.FC = () => {
                               <p className="text-sm text-gray-500">
                                 {reply.content}
                               </p>
-                            </div>
+                            </Card>
                           ))}
-                        </div>
+                        </Card>
                       ))}
                       <div ref={spotCommentRef} />
                     </div>
@@ -506,7 +730,60 @@ const PostPage: React.FC = () => {
             </ResizablePanelGroup>
           </TabsContent>
           <TabsContent value="course">
-            <h1>야호</h1>
+            <ResizablePanelGroup
+              direction="horizontal"
+              className="rounded-lg border"
+            >
+              <ResizablePanel className="p-3 max-h-[540px]" defaultSize={50}>
+                <ScrollArea className="h-[540px] pr-5 pb-5">
+                  {courses.map((course, index) => (
+                    <Card
+                      key={index}
+                      className={`mb-3 duration-150 ${
+                        selectedCourseId === course.course_id
+                          ? "scale-[0.80]"
+                          : "hover:scale-[0.90]"
+                      }`}
+                      //onClick={() => retrieveCourse(course.course_id)}
+                    >
+                      <CardHeader>
+                        <div className="flex justify-between">
+                          <CardTitle>{course.title}</CardTitle>
+                          <CardDescription>
+                            {timeSince(course.created_at)}
+                          </CardDescription>
+                        </div>
+                        <CardDescription>
+                          @{course.owner_nickname}
+                        </CardDescription>
+                        <div className="flex justify-between">
+                          <p className="text-xs text-gray-500">
+                            {course.description}
+                          </p>
+                          <div className="flex">
+                            <CommitIcon className="text-gray-500 h-3 relative top-0.5" />
+                            <span className="text-xs text-gray-500">
+                              {course.spot_count}
+                            </span>
+                            <HeartIcon className="text-gray-500 h-3 relative top-0.5 ml-2" />
+                            <span className="text-xs text-gray-500">
+                              {course.favor_count}
+                            </span>
+                            <ChatBubbleIcon className="text-gray-500 h-3 relative top-0.5 ml-2" />
+                            <span className="text-xs text-gray-500">
+                              {course.comment_count}
+                            </span>
+                          </div>
+                        </div>
+                      </CardHeader>
+                    </Card>
+                  ))}
+                  <div ref={courseRef} />
+                </ScrollArea>
+              </ResizablePanel>
+              <ResizableHandle withHandle />
+              <ResizablePanel defaultSize={50}></ResizablePanel>
+            </ResizablePanelGroup>
           </TabsContent>
         </Tabs>
       </div>

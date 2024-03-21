@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import Layout from "../Layout.tsx";
 import { useNavigate } from "react-router-dom";
+import { ReloadIcon } from "@radix-ui/react-icons";
 
 import {
   Tabs,
@@ -21,6 +22,12 @@ import { Label } from "@/components/ui/label.tsx";
 import { Button } from "@/components/ui/button.tsx";
 import { AlertBox } from "../snippet/AlertBox.tsx";
 import { SignUpDrawer } from "./SignUpDrawer.tsx";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -37,6 +44,8 @@ const LoginPage: React.FC = () => {
 
   const [isOpen, setIsOpen] = useState(false);
   const [isSignUpSuccess, setIsSignUpSuccess] = useState(false);
+
+  const [isLoadAnimation, setIsLoadAmination] = useState(false);
 
   const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -55,10 +64,12 @@ const LoginPage: React.FC = () => {
   };
 
   const handleLogin = async () => {
+    setIsLoadAmination(true);
     if (!email.trim()) {
       setErrorName("로그인 실패");
       setErrorMessage("이메일을 입력해주세요");
       setIsOpen(true);
+      setIsLoadAmination(false);
       return; // 함수 종료
     }
 
@@ -66,6 +77,7 @@ const LoginPage: React.FC = () => {
       setErrorName("로그인 실패");
       setErrorMessage("비밀번호를 입력해주세요");
       setIsOpen(true);
+      setIsLoadAmination(false);
       return; // 함수 종료
     }
     try {
@@ -85,6 +97,7 @@ const LoginPage: React.FC = () => {
         );
         setIsOpen(true);
         setPassword("");
+        setIsLoadAmination(false);
         return;
       }
 
@@ -98,6 +111,8 @@ const LoginPage: React.FC = () => {
       setErrorMessage("로그인 처리 중 오류가 발생했습니다.");
       setIsOpen(true);
       setPassword("");
+    } finally {
+      setIsLoadAmination(false);
     }
   };
 
@@ -182,7 +197,16 @@ const LoginPage: React.FC = () => {
               </div>
             </CardContent>
             <CardFooter>
-              <Button onClick={handleLogin}>로그인</Button>
+              {!isLoadAnimation ? (
+                <Button onClick={handleLogin} disabled={isLoadAnimation}>
+                  로그인
+                </Button>
+              ) : (
+                <Button disabled>
+                  <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                  Please wait
+                </Button>
+              )}
             </CardFooter>
           </Card>
         </TabsContent>
@@ -221,6 +245,32 @@ const LoginPage: React.FC = () => {
           </Card>
         </TabsContent>
       </Tabs>
+      <Accordion type="single" collapsible className="w-[400px] mx-auto">
+        <AccordionItem value="item-1">
+          <AccordionTrigger>회원가입은 언제 처리되나요?</AccordionTrigger>
+          <AccordionContent className="text-slate-400">
+            회원가입은 다른 관리자의 승인을 받아야만 처리가 가능합니다.
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-2">
+          <AccordionTrigger>
+            승인을 받은 것 같은데 이메일이 안와요
+          </AccordionTrigger>
+          <AccordionContent className="text-slate-400">
+            해당 메일은 때로는 스팸 계정으로 인식됩니다. 스팸 메일함을
+            확인해주세요.
+          </AccordionContent>
+        </AccordionItem>
+        <AccordionItem value="item-3">
+          <AccordionTrigger>
+            문제가 있어요, 어떻게 도움을 받을 수 있나요?
+          </AccordionTrigger>
+          <AccordionContent className="text-slate-400">
+            kiit0901@gmail.com 으로 문의 주시면 빠른 시일 내에 도움을 드릴 수
+            있습니다.
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
       <AlertBox
         isOpen={isOpen}
         close={() => setIsOpen(false)}
