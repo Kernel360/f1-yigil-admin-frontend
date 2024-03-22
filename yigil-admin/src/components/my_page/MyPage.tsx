@@ -7,6 +7,7 @@ import {
   RocketIcon,
   PersonIcon,
   EnvelopeClosedIcon,
+  ReloadIcon,
 } from "@radix-ui/react-icons";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert.tsx";
 import {
@@ -49,6 +50,8 @@ const MyPage: React.FC = () => {
   const [alertName, setAlertName] = useState("");
   const [message, setMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
+
+  const [isLoadAnimation, setIsLoadAmination] = useState(false);
 
   const fetchUserInfo = () => {
     const accessToken = getCookie("accessToken");
@@ -100,6 +103,7 @@ const MyPage: React.FC = () => {
   const handleSubmit = () => {
     const formData = new FormData();
     const fileInput = document.getElementById("picture") as HTMLInputElement;
+    setIsLoadAmination(true);
 
     if (fileInput && fileInput.files && fileInput.files.length > 0) {
       formData.append("profileImageFile", fileInput.files[0]);
@@ -107,6 +111,7 @@ const MyPage: React.FC = () => {
       setAlertName("파일 업로드 실패");
       setMessage("파일을 업로드해주세요");
       setIsOpen(true);
+      setIsLoadAmination(false);
     }
 
     const accessToken = getCookie("accessToken");
@@ -124,6 +129,7 @@ const MyPage: React.FC = () => {
             "서버에서 오류가 발생하였습니다. 응답 코드: " + response.status
           );
         }
+        setIsLoadAmination(false);
         return response.json();
       })
       .then((data) => {
@@ -131,6 +137,7 @@ const MyPage: React.FC = () => {
         setAlertName("업로드 성공");
         setMessage(data.getMessage);
         setIsOpen(true);
+        setIsLoadAmination(false);
       })
       .catch((error) => {
         setAlertName("업로드 실패");
@@ -138,6 +145,7 @@ const MyPage: React.FC = () => {
           "프로필 이미지 업로드 중 오류가 발생했습니다. " + error.getMessage
         );
         setIsOpen(true);
+        setIsLoadAmination(false);
       });
   };
 
@@ -158,10 +166,12 @@ const MyPage: React.FC = () => {
   };
 
   const requestPasswordChange = async () => {
+    setIsLoadAmination(false);
     if (!current_password.trim()) {
       setAlertName("비밀번호 변경 실패");
       setMessage("현재 비밀번호를 작성해주세요");
       setIsOpen(true);
+      setIsLoadAmination(false);
       return;
     }
 
@@ -169,6 +179,7 @@ const MyPage: React.FC = () => {
       setAlertName("비밀번호 변경 실패");
       setMessage("변경할 비밀번호를 작성해주세요");
       setIsOpen(true);
+      setIsLoadAmination(false);
       return;
     }
 
@@ -178,6 +189,7 @@ const MyPage: React.FC = () => {
         "새로운 비밀번호와 비밀번호 확인의 값이 다릅니다.\n다시 작성해주세요"
       );
       setIsOpen(true);
+      setIsLoadAmination(false);
       return;
     }
 
@@ -206,6 +218,7 @@ const MyPage: React.FC = () => {
         setCurrentPassword("");
         setPassword("");
         setPasswordCheck("");
+        setIsLoadAmination(false);
         return;
       }
 
@@ -222,6 +235,8 @@ const MyPage: React.FC = () => {
       setCurrentPassword("");
       setPassword("");
       setPasswordCheck("");
+    } finally {
+      setIsLoadAmination(false);
     }
   };
 
@@ -283,7 +298,16 @@ const MyPage: React.FC = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={handleSubmit}>업로드</Button>
+                {!isLoadAnimation ? (
+                  <Button onClick={handleSubmit} disabled={isLoadAnimation}>
+                    업로드
+                  </Button>
+                ) : (
+                  <Button disabled>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </Button>
+                )}
               </DialogFooter>
             </DialogContent>
           </Dialog>
@@ -337,7 +361,19 @@ const MyPage: React.FC = () => {
                 </div>
               </div>
               <DialogFooter>
-                <Button onClick={requestPasswordChange}>비밀번호 변경</Button>
+                {!isLoadAnimation ? (
+                  <Button
+                    onClick={requestPasswordChange}
+                    disabled={isLoadAnimation}
+                  >
+                    비밀번호 변경
+                  </Button>
+                ) : (
+                  <Button disabled>
+                    <ReloadIcon className="mr-2 h-4 w-4 animate-spin" />
+                    Please wait
+                  </Button>
+                )}
               </DialogFooter>
             </DialogContent>
           </Dialog>

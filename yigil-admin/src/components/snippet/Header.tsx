@@ -47,11 +47,11 @@ export function Header() {
               <ListItem href="/notice" title="공지사항 관리">
                 사용자를 위한 공지사항을 작성하세요.
               </ListItem>
-              <ListItem href="/event" title="이벤트 관리">
-                이벤트를 생성하고 관리하세요.
+              <ListItem href="/place" title="장소 데이터 관리">
+                서비스에 등록된 장소 데이터를 관리하세요.
               </ListItem>
-              <ListItem href="/coupon" title="쿠폰 관리">
-                쿠폰을 생성하고 지급하세요.
+              <ListItem href="/batch" title="배치 서비스 관리">
+                각종 서비스 및 배치가 잘 작동하는지 확인해요.
               </ListItem>
             </ul>
           </NavigationMenuContent>

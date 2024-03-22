@@ -1,6 +1,7 @@
 import React from "react";
 import { ThemeProvider } from "@/components/theme-provider.tsx";
 import { Header } from "@/components/snippet/Header.tsx";
+import { Toaster } from "@/components/ui/toaster";
 
 type LayoutProps = {
   children: React.ReactNode;
@@ -13,6 +14,7 @@ const Layout: React.FC<LayoutProps> = ({ children }) => {
         <Header />
       </header>
       <main>{children}</main>
+      <Toaster />
     </ThemeProvider>
   );
 };

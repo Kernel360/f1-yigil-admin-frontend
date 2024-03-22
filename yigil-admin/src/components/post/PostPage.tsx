@@ -57,7 +57,6 @@ import {
   HoverCardTrigger,
 } from "@/components/ui/hover-card";
 import { Separator } from "@/components/ui/separator";
-import { access } from "fs";
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
@@ -1036,63 +1035,61 @@ const PostPage: React.FC = () => {
                         </CollapsibleTrigger>
                       </div>
                       <CollapsibleContent>
-                        {courseDetail.spots.map(
-                          (courseSpot, courseSpotIndex) => (
-                            <Card className="m-5">
-                              <Carousel className="w-full max-w-xs mx-auto my-5">
-                                <CarouselContent>
-                                  {courseSpot.image_urls.map(
-                                    (courseSpotUrl, courseSpotUrlIndex) => (
-                                      <CarouselItem key={courseSpotUrlIndex}>
-                                        <div className="p-1">
-                                          <Card>
-                                            <CardContent className="flex aspect-square items-center justify-center p-6">
-                                              <img
-                                                src={courseSpotUrl}
-                                                className="object-cover rounded-md"
-                                              />
-                                            </CardContent>
-                                          </Card>
-                                        </div>
-                                      </CarouselItem>
-                                    )
-                                  )}
-                                </CarouselContent>
-                                <CarouselPrevious />
-                                <CarouselNext />
-                              </Carousel>
-                              <div className="px-10 py-3">
-                                <h1 className="scroll-m-20 text-2xl font-bold tracking-tight lg:text-2xl">
-                                  {courseSpot.place_name}
-                                </h1>
-                                <p className="text-sm text-gray-500">
-                                  리뷰 고유 아이디: #{courseSpot.spot_id}
-                                </p>
-                                <Card className="text-sm mt-2 p-2 rounded-xl">
-                                  {courseSpot.content}
-                                </Card>
-                              </div>
-                              <div className="px-10 py-3">
-                                <h3 className="text-xm font-bold">위치</h3>
-                                <img
-                                  className="my-3 w-full"
-                                  src={courseSpot.map_static_image_url}
-                                />
-                                <p className="text-sm text-gray-500">
-                                  🗺️ {courseSpot.address}
-                                </p>
-                                <p className="text-sm text-gray-500">
-                                  🧭 ({courseSpot.x}, {courseSpot.y})
-                                </p>
-                              </div>
-                              <div className="px-10 py-3">
-                                <p className="font-semibold">
-                                  별점 ⭐️ {courseSpot.rate}
-                                </p>
-                              </div>
-                            </Card>
-                          )
-                        )}
+                        {courseDetail.spots.map((courseSpot) => (
+                          <Card className="m-5">
+                            <Carousel className="w-full max-w-xs mx-auto my-5">
+                              <CarouselContent>
+                                {courseSpot.image_urls.map(
+                                  (courseSpotUrl, courseSpotUrlIndex) => (
+                                    <CarouselItem key={courseSpotUrlIndex}>
+                                      <div className="p-1">
+                                        <Card>
+                                          <CardContent className="flex aspect-square items-center justify-center p-6">
+                                            <img
+                                              src={courseSpotUrl}
+                                              className="object-cover rounded-md"
+                                            />
+                                          </CardContent>
+                                        </Card>
+                                      </div>
+                                    </CarouselItem>
+                                  )
+                                )}
+                              </CarouselContent>
+                              <CarouselPrevious />
+                              <CarouselNext />
+                            </Carousel>
+                            <div className="px-10 py-3">
+                              <h1 className="scroll-m-20 text-2xl font-bold tracking-tight lg:text-2xl">
+                                {courseSpot.place_name}
+                              </h1>
+                              <p className="text-sm text-gray-500">
+                                리뷰 고유 아이디: #{courseSpot.spot_id}
+                              </p>
+                              <Card className="text-sm mt-2 p-2 rounded-xl">
+                                {courseSpot.content}
+                              </Card>
+                            </div>
+                            <div className="px-10 py-3">
+                              <h3 className="text-xm font-bold">위치</h3>
+                              <img
+                                className="my-3 w-full"
+                                src={courseSpot.map_static_image_url}
+                              />
+                              <p className="text-sm text-gray-500">
+                                🗺️ {courseSpot.address}
+                              </p>
+                              <p className="text-sm text-gray-500">
+                                🧭 ({courseSpot.x}, {courseSpot.y})
+                              </p>
+                            </div>
+                            <div className="px-10 py-3">
+                              <p className="font-semibold">
+                                별점 ⭐️ {courseSpot.rate}
+                              </p>
+                            </div>
+                          </Card>
+                        ))}
                       </CollapsibleContent>
                     </Collapsible>
                     <div className="px-10 py-3">
