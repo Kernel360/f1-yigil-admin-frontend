@@ -50,8 +50,8 @@ export function Header() {
               <ListItem href="/place" title="장소 데이터 관리">
                 서비스에 등록된 장소 데이터를 관리하세요.
               </ListItem>
-              <ListItem href="/batch" title="배치 서비스 관리">
-                각종 서비스 및 배치가 잘 작동하는지 확인해요.
+              <ListItem href="/status" title="서비스 상태 관리">
+                각종 서비스가 잘 작동하는지 확인해요.
               </ListItem>
             </ul>
           </NavigationMenuContent>
