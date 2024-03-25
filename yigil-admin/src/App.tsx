@@ -11,6 +11,7 @@ import PostPage from "./components/post/PostPage.tsx";
 import PlacePage from "./components/place/PlacePage.tsx";
 import ReportPage from "./components/report/ReportPage.tsx";
 import StatusPage from "./components/status/StatusPage.tsx";
+import RegionStatPage from "./components/stat/RegionStatPage.tsx";
 
 function App() {
   return (
@@ -25,6 +26,7 @@ function App() {
         <Route path="/place" element={<PlacePage />} />
         <Route path="/report" element={<ReportPage />} />
         <Route path="/status" element={<StatusPage />} />
+        <Route path="/region-stat" element={<RegionStatPage />} />
         <Route path="/my" element={<MyPage />} />
         <Route path="/*" element={<NotFound />} />
       </Routes>

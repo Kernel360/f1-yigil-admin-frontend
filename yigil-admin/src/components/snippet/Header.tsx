@@ -59,7 +59,7 @@ export function Header() {
         <NavigationMenuItem>
           <NavigationMenuTrigger>사용자 관리</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[800px] lg:grid-cols-[.75fr_1fr]">
+            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <ListItem href="/member" title="사용자 관리">
                 서비스를 사용하는 사용자를 관리하세요.
               </ListItem>
@@ -72,11 +72,11 @@ export function Header() {
         <NavigationMenuItem>
           <NavigationMenuTrigger>통계 관리</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[800px] lg:grid-cols-[.75fr_1fr]">
-              <ListItem href="/place" title="지역/장소 통계">
+            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
+              <ListItem href="/region-stat" title="지역/장소 통계">
                 서비스에 지역과 장소에 대한 통계를 확인해보세요.
               </ListItem>
-              <ListItem href="/like" title="좋아요 통계">
+              <ListItem href="/like-stat" title="좋아요 통계">
                 사용자 좋아요에 따른 통계를 확인해보세요.
               </ListItem>
             </ul>
@@ -85,7 +85,7 @@ export function Header() {
         <NavigationMenuItem>
           <NavigationMenuTrigger>게시글 관리</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[800px] lg:grid-cols-[.75fr_1fr]">
+            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <ListItem href="/post" title="게시글 관리">
                 서비스에 작성된 게시글들을 확인하세요.
               </ListItem>
@@ -95,7 +95,7 @@ export function Header() {
         <NavigationMenuItem>
           <NavigationMenuTrigger>신고 관리</NavigationMenuTrigger>
           <NavigationMenuContent>
-            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[800px] lg:grid-cols-[.75fr_1fr]">
+            <ul className="grid gap-3 p-4 md:w-[200px] lg:w-[500px] lg:grid-cols-[.75fr_1fr]">
               <ListItem href="/report" title="신고 관리">
                 사용자의 불편사항을 확인하고 개선해보세요.
               </ListItem>
