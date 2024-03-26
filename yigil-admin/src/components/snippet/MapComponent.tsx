@@ -23,7 +23,7 @@ interface PlaceMap {
 }
 
 const markerIcon = L.icon({
-  iconUrl: "/public/images/marker-icon-2x.png",
+  iconUrl: "/images/marker-icon-2x.png",
   iconSize: [25, 41],
   iconAnchor: [12, 41],
   popupAnchor: [0, -41],

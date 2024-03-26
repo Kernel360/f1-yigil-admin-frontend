@@ -128,7 +128,7 @@ const StatusPage: React.FC = () => {
                   <CardHeader className="pb-0">
                     <img
                       className="rounded-md"
-                      src="/public/images/serviceintro.png"
+                      src="/images/serviceintro.png"
                     />
                     <CardTitle>이길로그</CardTitle>
 
@@ -156,10 +156,7 @@ const StatusPage: React.FC = () => {
               <div className="p-1">
                 <Card className="w-[250px]">
                   <CardHeader className="pb-0">
-                    <img
-                      className="rounded-md"
-                      src="/public/images/adminintro.png"
-                    />
+                    <img className="rounded-md" src="/images/adminintro.png" />
                     <CardTitle>이길로그:관리자</CardTitle>
 
                     {isAdminAlive ? (
@@ -186,10 +183,7 @@ const StatusPage: React.FC = () => {
               <div className="p-1">
                 <Card className="w-[250px]">
                   <CardHeader className="pb-0">
-                    <img
-                      className="rounded-md"
-                      src="/public/images/batchintro.png"
-                    />
+                    <img className="rounded-md" src="/images/batchintro.png" />
                     <CardTitle>이길로그:배치</CardTitle>
 
                     {isBatchAlive ? (
@@ -220,7 +214,7 @@ const StatusPage: React.FC = () => {
                   <CardHeader className="pb-0">
                     <img
                       className="rounded-md"
-                      src="/public/images/monitorintro.png"
+                      src="/images/monitorintro.png"
                     />
                     <CardTitle>이길로그:모니터링</CardTitle>
 
