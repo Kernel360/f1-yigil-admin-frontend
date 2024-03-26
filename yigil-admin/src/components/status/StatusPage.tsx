@@ -128,7 +128,7 @@ const StatusPage: React.FC = () => {
                   <CardHeader className="pb-0">
                     <img
                       className="rounded-md"
-                      src="src/assets/serviceintro.png"
+                      src="/public/images/serviceintro.png"
                     />
                     <CardTitle>이길로그</CardTitle>
 
@@ -158,7 +158,7 @@ const StatusPage: React.FC = () => {
                   <CardHeader className="pb-0">
                     <img
                       className="rounded-md"
-                      src="src/assets/adminintro.png"
+                      src="/public/images/adminintro.png"
                     />
                     <CardTitle>이길로그:관리자</CardTitle>
 
@@ -188,7 +188,7 @@ const StatusPage: React.FC = () => {
                   <CardHeader className="pb-0">
                     <img
                       className="rounded-md"
-                      src="src/assets/batchintro.png"
+                      src="/public/images/batchintro.png"
                     />
                     <CardTitle>이길로그:배치</CardTitle>
 
@@ -220,7 +220,7 @@ const StatusPage: React.FC = () => {
                   <CardHeader className="pb-0">
                     <img
                       className="rounded-md"
-                      src="src/assets/monitorintro.png"
+                      src="/public/images/monitorintro.png"
                     />
                     <CardTitle>이길로그:모니터링</CardTitle>
 
