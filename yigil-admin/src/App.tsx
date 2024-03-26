@@ -12,6 +12,7 @@ import PlacePage from "./components/place/PlacePage.tsx";
 import ReportPage from "./components/report/ReportPage.tsx";
 import StatusPage from "./components/status/StatusPage.tsx";
 import RegionStatPage from "./components/stat/RegionStatPage.tsx";
+import FavorStatPage from "./components/stat/FavorStatPage.tsx";
 
 function App() {
   return (
@@ -27,6 +28,7 @@ function App() {
         <Route path="/report" element={<ReportPage />} />
         <Route path="/status" element={<StatusPage />} />
         <Route path="/region-stat" element={<RegionStatPage />} />
+        <Route path="/like-stat" element={<FavorStatPage />} />
         <Route path="/my" element={<MyPage />} />
         <Route path="/*" element={<NotFound />} />
       </Routes>

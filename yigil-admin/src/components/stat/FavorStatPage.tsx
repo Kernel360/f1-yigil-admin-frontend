@@ -28,26 +28,24 @@ import {
 
 const apiBaseUrl = import.meta.env.VITE_API_BASE_URL;
 
-export type RegionStat = {
-  region: string;
-  reference_count: number;
+export type FavorStat = {
+  date: string;
+  count: number;
 };
 
-export type RecentPost = {
-  owner_profile_image_url: string;
-  owner_nickname: string;
-  owner_email: string;
-  travel_name: string;
-  travel_url: string;
+export type TopFavor = {
+  writer_email: string;
+  writer_name: string;
+  writer_profile_image_url: string;
+  favor_count: number;
 };
 
-const RegionStatPage: React.FC = () => {
+const FavorStatPage: React.FC = () => {
   const [alertName, setAlertName] = useState("");
   const [message, setMessage] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
-  const [recentPostCount, setRecentPostCount] = useState(0);
-  const [recentPost, setRecentPost] = useState<RecentPost[]>([]);
+  const [topFavors, setTopFavors] = useState<TopFavor[]>([]);
 
   const [date, setDate] = React.useState<DateRange | undefined>(() => {
     const today = new Date();
@@ -60,18 +58,18 @@ const RegionStatPage: React.FC = () => {
     };
   });
 
-  const [stats, setStats] = useState<RegionStat[]>([]);
+  const [stats, setStats] = useState<FavorStat[]>([]);
 
   useEffect(() => {
     if (date?.from && date?.to) {
       const formattedStartDate = format(date.from, "yyyy-MM-dd");
       const formattedEndDate = format(date.to, "yyyy-MM-dd");
 
-      const fetchRegionStats = async () => {
+      const fetchFavorStats = async () => {
         try {
           const accessToken = getCookie("accessToken");
           const response = await fetch(
-            `${apiBaseUrl}/api/v1/stats/region?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+            `${apiBaseUrl}/api/v1/stats/daily-favors?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
             {
               method: "GET",
               headers: {
@@ -90,8 +88,13 @@ const RegionStatPage: React.FC = () => {
           }
 
           const responseData = await response.json();
-          const { region_stats_info_list } = responseData;
-          setStats(region_stats_info_list);
+          const { daily_favors } = responseData;
+          const sortedFavors = daily_favors.sort(
+            (a: FavorStat, b: FavorStat) => {
+              return new Date(a.date).getTime() - new Date(b.date).getTime();
+            }
+          );
+          setStats(sortedFavors);
         } catch (error) {
           setAlertName("통계를 불러올 수 없습니다");
           setMessage("통계를 불러오던 중 오류가 발생하였습니다");
@@ -99,41 +102,49 @@ const RegionStatPage: React.FC = () => {
         }
       };
 
-      fetchRegionStats();
+      fetchFavorStats();
     }
   }, [date]);
 
-  const fetchRecentPosts = async () => {
-    try {
-      const accessToken = getCookie("accessToken");
-      const response = await fetch(`${apiBaseUrl}/api/v1/stats/region/recent`, {
-        method: "GET",
-        headers: {
-          Authorization: `${accessToken}`,
-          "Content-Type": "application/json",
-        },
-      });
-      if (!response.ok) {
-        const errorData = await response.json();
-        setAlertName("최근 콘텐츠 정보를 불러올 수 없습니다");
-        setMessage(errorData.message);
-        setIsOpen(true);
-        return;
-      }
+  const fetchTopFavors = async () => {
+    if (date?.from && date?.to) {
+      const formattedStartDate = format(date.from, "yyyy-MM-dd");
+      const formattedEndDate = format(date.to, "yyyy-MM-dd");
+      try {
+        const accessToken = getCookie("accessToken");
+        const response = await fetch(
+          `${apiBaseUrl}/api/v1/stats/daily-favors/top?startDate=${formattedStartDate}&endDate=${formattedEndDate}`,
+          {
+            method: "GET",
+            headers: {
+              Authorization: `${accessToken}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-      const responseData = await response.json();
-      const { travels, travel_cnt } = responseData;
-      setRecentPost(travels);
-      setRecentPostCount(travel_cnt);
-    } catch (error) {
-      setAlertName("최큰 콘텐츠 정보를 불러올 수 없습니다");
-      setMessage("최근 콘텐츠 정보를 불러오던 중 오류가 발생하였습니다");
-      setIsOpen(true);
+        if (!response.ok) {
+          const errorData = await response.json();
+          setAlertName("좋아요 순위 정보를 불러올 수 없습니다");
+          setMessage(errorData.message);
+          setIsOpen(true);
+          return;
+        }
+
+        const responseData = await response.json();
+        const { daily_favors } = responseData;
+        setTopFavors(daily_favors);
+      } catch (error) {
+        setAlertName("좋아요 순위 정보를 불러올 수 없습니다");
+        setMessage("좋아요 순위 정보를 불러오던 중 오류가 발생하였습니다");
+        console.error(error);
+        setIsOpen(true);
+      }
     }
   };
 
   useEffect(() => {
-    fetchRecentPosts();
+    fetchTopFavors();
   }, []);
 
   return (
@@ -141,10 +152,8 @@ const RegionStatPage: React.FC = () => {
       <div className="w-[1100px] my-10 mx-auto">
         <Alert className="mb-10">
           <RocketIcon className="h-4 w-4" />
-          <AlertTitle>지역/장소 통계</AlertTitle>
-          <AlertDescription>
-            서비스에 등록된 게시글 통계를 확인하세요.
-          </AlertDescription>
+          <AlertTitle>좋아요 통게</AlertTitle>
+          <AlertDescription>사용자 선호도 통계를 확인하세요.</AlertDescription>
         </Alert>
         <div className="flex justify-end mb-10">
           <Popover>
@@ -190,7 +199,7 @@ const RegionStatPage: React.FC = () => {
             <ResponsiveContainer width="100%" height={350}>
               <BarChart data={stats}>
                 <Bar
-                  dataKey="reference_count"
+                  dataKey="count"
                   radius={[4, 4, 0, 0]}
                   style={
                     {
@@ -200,7 +209,7 @@ const RegionStatPage: React.FC = () => {
                   }
                 />
                 <XAxis
-                  dataKey="region"
+                  dataKey="date"
                   stroke="#888888"
                   fontSize={12}
                   tickLine={false}
@@ -218,37 +227,31 @@ const RegionStatPage: React.FC = () => {
           </Card>
           <Card className="w-[440px]">
             <CardHeader className="p-10">
-              <CardTitle>Recent Contents</CardTitle>
+              <CardTitle>Top Contents</CardTitle>
               <CardDescription>
-                오늘 총 {recentPostCount}개의 콘텐츠가 등록되었습니다
+                좋아요를 많이 받은 게시물을 확인해보세요
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-8">
-              {recentPost.map((post) => (
+              {topFavors.map((favor) => (
                 <div className="flex items-center">
                   <Avatar className="flex items-center">
                     <AvatarImage
-                      src={post.owner_profile_image_url}
+                      src={favor.writer_profile_image_url}
                       alt="Avatar"
                     />
-                    <AvatarFallback>{post.owner_nickname}</AvatarFallback>
+                    <AvatarFallback>{favor.writer_name}</AvatarFallback>
                   </Avatar>
-
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      {post.owner_nickname}
+                      {favor.writer_name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      {post.owner_email}
+                      {favor.writer_email}
                     </p>
                   </div>
                   <div className="ml-auto font-medium">
-                    <a
-                      className="truncate"
-                      href={"https://yigil.co.kr" + post.travel_url}
-                    >
-                      {post.travel_name}
-                    </a>
+                    +{favor.favor_count}
                   </div>
                 </div>
               ))}
@@ -266,7 +269,7 @@ const RegionStatPage: React.FC = () => {
   );
 };
 
-export default withAuthProtection(RegionStatPage);
+export default withAuthProtection(FavorStatPage);
 
 function getCookie(name: string): string | undefined {
   const value = `; ${document.cookie}`;
