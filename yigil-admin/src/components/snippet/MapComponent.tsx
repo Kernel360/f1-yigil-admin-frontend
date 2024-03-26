@@ -22,6 +22,13 @@ interface PlaceMap {
   name: string;
 }
 
+const markerIcon = L.icon({
+  iconUrl: "src/assets/marker-icon-2x.png",
+  iconSize: [25, 41],
+  iconAnchor: [12, 41],
+  popupAnchor: [0, -41],
+});
+
 const MapComponent: React.FC<MapProps> = ({
   lat,
   lng,
@@ -56,7 +63,7 @@ const MapComponent: React.FC<MapProps> = ({
       markerClusterGroup.clearLayers();
 
       places.forEach((place: PlaceMap) => {
-        const marker = L.marker([place.y, place.x])
+        const marker = L.marker([place.y, place.x], { icon: markerIcon })
           .bindPopup(place.name)
           .on("click", () => {
             onMarkerClick && onMarkerClick(place.id);
